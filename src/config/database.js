@@ -6,7 +6,7 @@ let pool;
 let dbType;
 
 const initializeDatabase = async () => {
-  dbType = process.env.DB_TYPE || 'postgresql';
+  dbType = process.env.DB_TYPE || 'mock';
   
   if (dbType === 'mock') {
     console.log('Using mock database for development/demo');

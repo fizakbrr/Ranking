@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { username, role: 'admin' },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production',
       { expiresIn: '24h' }
     );
 
@@ -72,7 +72,7 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production');
     req.user = decoded;
     next();
   } catch (error) {
