@@ -62,4 +62,75 @@ router.get('/dashboard-stats', async (req, res) => {
   }
 });
 
+// Get recent updates
+router.get('/recent-updates', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const updates = await query(`
+      SELECT 
+        pu.id,
+        pu.points_change as points_added,
+        pu.reason,
+        pu.updated_by as admin_user,
+        pu.created_at,
+        d.name as division_name,
+        d.color as division_color
+      FROM point_updates pu
+      JOIN divisions d ON pu.division_id = d.id
+      ORDER BY pu.created_at DESC
+      LIMIT ?
+    `, [limit]);
+
+    res.json({ updates });
+
+  } catch (error) {
+    console.error('Recent updates error:', error);
+    res.status(500).json({ message: 'Error fetching recent updates' });
+  }
+});
+
+// Update points for a division
+router.post('/updatePoints', async (req, res) => {
+  try {
+    const { divisionId, pointsToAdd, reason } = req.body;
+
+    if (!divisionId || pointsToAdd === undefined || !reason) {
+      return res.status(400).json({ message: 'Division ID, points, and reason are required' });
+    }
+
+    // Get the division
+    const division = await queryOne('SELECT * FROM divisions WHERE id = ?', [divisionId]);
+    if (!division) {
+      return res.status(404).json({ message: 'Division not found' });
+    }
+
+    // Update division points
+    const newPoints = division.points + pointsToAdd;
+    await execute(
+      'UPDATE divisions SET points = ?, last_updated = ? WHERE id = ?',
+      [newPoints, new Date(), divisionId]
+    );
+
+    // Create point update record
+    await execute(
+      `INSERT INTO point_updates (division_id, points_change, reason, updated_by) 
+       VALUES (?, ?, ?, ?)`,
+      [divisionId, pointsToAdd, reason, req.user.username]
+    );
+
+    // Get updated division
+    const updatedDivision = await queryOne('SELECT * FROM divisions WHERE id = ?', [divisionId]);
+
+    res.json({
+      message: 'Points updated successfully',
+      division: updatedDivision
+    });
+
+  } catch (error) {
+    console.error('Update points error:', error);
+    res.status(500).json({ message: 'Error updating points' });
+  }
+});
+
 module.exports = router;

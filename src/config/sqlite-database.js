@@ -36,11 +36,12 @@ const createTables = async () => {
       `CREATE TABLE IF NOT EXISTS divisions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
+        color TEXT DEFAULT '#22C55E',
+        rank INTEGER DEFAULT 1,
         description TEXT,
         points INTEGER DEFAULT 0,
         level INTEGER DEFAULT 1,
-        total_badges INTEGER DEFAULT 0,
-        achievements TEXT DEFAULT '[]',
+        week_id INTEGER,
         last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`,

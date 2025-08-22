@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
       // For rank sorting, we need to handle it specially since rank is calculated
       divisionsQuery = `
         SELECT 
-          id, name, points, level, total_badges as badges, achievements,
+          id, name, points, level,
           ROW_NUMBER() OVER (ORDER BY points DESC) as rank
         FROM divisions 
         ${searchQuery}
@@ -58,7 +58,7 @@ router.get('/', async (req, res) => {
     } else {
       divisionsQuery = `
         SELECT 
-          id, name, points, level, total_badges as badges, achievements,
+          id, name, points, level,
           ROW_NUMBER() OVER (ORDER BY points DESC) as rank
         FROM divisions 
         ${searchQuery}
@@ -145,7 +145,7 @@ router.get('/stats', async (req, res) => {
     
     // Get top performers
     const topPerformersQuery = `
-      SELECT name, points, level, total_badges as badges, achievements
+      SELECT name, points, level
       FROM divisions 
       ORDER BY points DESC
       LIMIT 5

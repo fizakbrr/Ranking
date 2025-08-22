@@ -18,16 +18,15 @@ const autoStartNewWeek = async () => {
         const division = divisions[i];
         await db.execute(
           `INSERT INTO weekly_history 
-           (week_id, division_id, division_name, final_points, final_level, final_rank, achievements) 
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+           (week_id, division_id, division_name, final_points, final_level, final_rank) 
+           VALUES (?, ?, ?, ?, ?, ?)`,
           [
             currentWeek.id,
             division.id,
             division.name,
             division.points,
             division.level,
-            i + 1, // rank
-            JSON.stringify(division.achievements || [])
+            i + 1 // rank
           ]
         );
       }
@@ -54,7 +53,7 @@ const autoStartNewWeek = async () => {
     );
 
     // Reset all division points to 0
-    await db.execute('UPDATE divisions SET points = 0, level = 1, total_badges = 0');
+    await db.execute('UPDATE divisions SET points = 0, level = 1');
 
     // Log the reset
     await db.execute(

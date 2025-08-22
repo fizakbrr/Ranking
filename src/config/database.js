@@ -65,15 +65,15 @@ const createPostgreSQLTables = async () => {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS divisions (
       id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL UNIQUE,
+      name VARCHAR(100) NOT NULL UNIQUE,
+      color VARCHAR(7) DEFAULT '#22C55E',
+      rank INTEGER DEFAULT 1,
       description TEXT,
       points INTEGER DEFAULT 0,
       level INTEGER DEFAULT 1,
-      total_badges INTEGER DEFAULT 0,
-      achievements JSONB DEFAULT '[]'::jsonb,
+      week_id INTEGER REFERENCES weeks(id),
       last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 

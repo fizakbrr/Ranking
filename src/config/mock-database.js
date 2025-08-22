@@ -13,78 +13,63 @@ const mockData = {
   divisions: [
     {
       id: 1,
-      name: 'Engineering Division',
-      description: 'Software development teams',
+      name: 'Engineering',
       color: '#22C55E',
       rank: 1,
+      description: 'Software development and technical excellence',
       points: 1250,
       level: 3,
-      total_badges: 5,
-      badges: JSON.stringify(['Innovation Award', 'Excellence Badge', 'Team Player', 'Code Master', 'Tech Leader']),
-      achievements: JSON.stringify(['Innovation Award', 'Team Player', 'Project Excellence']),
       week_id: 1,
       last_updated: new Date(),
-      created_at: new Date('2024-01-01')
+      created_at: new Date()
     },
     {
       id: 2,
-      name: 'Marketing Division',
-      description: 'Marketing and communications',
-      color: '#10B981',
-      rank: 4,
+      name: 'Marketing',
+      color: '#3B82F6',
+      rank: 2,
+      description: 'Brand building and customer acquisition',
       points: 980,
       level: 2,
-      total_badges: 3,
-      badges: JSON.stringify(['Creative Excellence', 'Brand Master', 'Campaign Star']),
-      achievements: JSON.stringify(['Creative Excellence', 'Campaign Success']),
       week_id: 1,
       last_updated: new Date(),
-      created_at: new Date('2024-01-01')
+      created_at: new Date()
     },
     {
       id: 3,
-      name: 'Sales Division',
-      description: 'Sales and business development',
+      name: 'Sales',
       color: '#F59E0B',
-      rank: 2,
-      points: 1100,
-      level: 3,
-      total_badges: 4,
-      badges: JSON.stringify(['Revenue Champion', 'Client Focus', 'Deal Closer', 'Growth Leader']),
-      achievements: JSON.stringify(['Revenue Champion', 'Client Focus', 'Quarter Winner']),
+      rank: 3,
+      description: 'Revenue generation and client relationships',
+      points: 850,
+      level: 2,
       week_id: 1,
       last_updated: new Date(),
-      created_at: new Date('2024-01-01')
+      created_at: new Date()
     },
     {
       id: 4,
-      name: 'HR Division',
-      description: 'Human resources and talent',
+      name: 'HR',
       color: '#8B5CF6',
-      rank: 5,
-      points: 750,
-      level: 2,
-      total_badges: 2,
-      badges: JSON.stringify(['People First', 'Culture Builder']),
-      achievements: JSON.stringify(['People First', 'Team Builder']),
+      rank: 4,
+      description: 'People management and culture building',
+      points: 720,
+      level: 1,
       week_id: 1,
       last_updated: new Date(),
-      created_at: new Date('2024-01-01')
+      created_at: new Date()
     },
     {
       id: 5,
-      name: 'Finance Division',
-      description: 'Financial planning and analysis',
+      name: 'Finance',
       color: '#EF4444',
-      rank: 3,
-      points: 890,
-      level: 2,
-      total_badges: 3,
-      badges: JSON.stringify(['Financial Excellence', 'Budget Master', 'Analyst Pro']),
-      achievements: JSON.stringify(['Financial Excellence', 'Budget Achievement']),
+      rank: 5,
+      description: 'Financial planning and analysis',
+      points: 650,
+      level: 1,
       week_id: 1,
       last_updated: new Date(),
-      created_at: new Date('2024-01-01')
+      created_at: new Date()
     }
   ],
   pointUpdates: [
@@ -193,8 +178,6 @@ const query = async (sql, params = []) => {
       name: division.name,
       points: division.points,
       level: division.level,
-      badges: division.total_badges,
-      achievements: division.achievements,
       rank: performanceRanks[division.id], // True performance rank (based on points)
       display_position: index + 1, // Current position in sorted list
       display_color: performanceRanks[division.id] === 1 ? '#FFD700' :
@@ -301,9 +284,6 @@ const execute = async (sql, params = []) => {
       description: '',
       points: 0,
       level: 1,
-      total_badges: 0,
-      badges: JSON.stringify([]),
-      achievements: JSON.stringify([]),
       week_id: params[3] || 1,
       last_updated: new Date(),
       created_at: new Date()
@@ -340,6 +320,25 @@ const execute = async (sql, params = []) => {
     };
     mockData.pointUpdates.push(newUpdate);
     return { lastID: newUpdate.id, changes: 1 };
+  }
+  
+  if (sql.includes('DELETE FROM divisions')) {
+    const divisionId = parseInt(params[0]);
+    const index = mockData.divisions.findIndex(d => d.id === divisionId);
+    if (index !== -1) {
+      mockData.divisions.splice(index, 1);
+      console.log('Mock: Deleted division with ID:', divisionId);
+    }
+    return { lastID: null, changes: 1 };
+  }
+  
+  if (sql.includes('DELETE FROM point_updates')) {
+    const divisionId = parseInt(params[0]);
+    const initialLength = mockData.pointUpdates.length;
+    mockData.pointUpdates = mockData.pointUpdates.filter(update => update.division_id !== divisionId);
+    const deletedCount = initialLength - mockData.pointUpdates.length;
+    console.log('Mock: Deleted', deletedCount, 'point updates for division ID:', divisionId);
+    return { lastID: null, changes: deletedCount };
   }
   
   return { lastID: null, changes: 1 };

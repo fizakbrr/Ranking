@@ -61,12 +61,19 @@ router.post('/', verifyToken, async (req, res) => {
 
     // Create new division
     const result = await execute(
-      `INSERT INTO divisions (name, color, rank, points, level, badges, achievements, week_id) 
-       VALUES (?, ?, ?, 0, 1, '[]', '[]', ?)`,
+      `INSERT INTO divisions (name, color, rank, points, level, week_id) 
+       VALUES (?, ?, ?, 0, 1, ?)`,
       [name, color, nextRank, currentWeek.id]
     );
 
     const newDivision = await queryOne('SELECT * FROM divisions WHERE id = ?', [result.lastID]);
+
+    // Create a point update record for the new division
+    await execute(
+      `INSERT INTO point_updates (division_id, points_change, reason, updated_by) 
+       VALUES (?, ?, ?, ?)`,
+      [result.lastID, 0, 'Division created', req.user.username]
+    );
 
     res.status(201).json({
       message: 'Division created successfully',
@@ -76,6 +83,33 @@ router.post('/', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Create division error:', error);
     res.status(500).json({ message: 'Error creating division' });
+  }
+});
+
+// Delete division (admin only)
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if division exists
+    const division = await queryOne('SELECT * FROM divisions WHERE id = ?', [id]);
+    if (!division) {
+      return res.status(404).json({ message: 'Division not found' });
+    }
+
+    // Delete the division
+    await execute('DELETE FROM divisions WHERE id = ?', [id]);
+
+    // Also delete any associated point updates for this division
+    await execute('DELETE FROM point_updates WHERE division_id = ?', [id]);
+
+    res.json({
+      message: 'Division deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete division error:', error);
+    res.status(500).json({ message: 'Error deleting division' });
   }
 });
 
